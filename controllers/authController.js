@@ -1,5 +1,5 @@
 import { UserModel } from "../models/user.js";
-
+import jwt from "jsonwebtoken";
 const handleError = (err) => {
     console.log("err....", err.code)
     let errors = { email: "", username: "", password: "" }
@@ -20,6 +20,15 @@ const handleError = (err) => {
 }
 
 
+// CREATE JWT TOKEN
+const maxAge = 60*60*24*5;
+const createToken = (id) => {
+    return jwt.sign({id}, "farah", {
+        expiresIn: maxAge
+    })
+}
+
+
 // SIGN UP PAGE 
 export const signup_get = (req, res) => {
     res.send("signup_get")
@@ -34,9 +43,11 @@ export const signup_post = async (req, res) => {
     console.log("req_data", req.body)
     const { email, username, password } = req.body
     try {
-        const saved_data = await UserModel.create({ email, username, password })
-        console.log("saved", saved_data)
-        res.status(200).send(`New Signup${saved_data}`)
+        const saved_user = await UserModel.create({ email, username, password })
+        console.log("saved", saved_user)
+        const token = createToken(saved_user._id)
+        res.cookie("jwt-token", token, {httpOnly: true, maxAge: maxAge*1000})
+        res.status(201).json({user: saved_user._id})
     } catch (err) {
         const error = handleError(err);
         res.status(500).json(error);
