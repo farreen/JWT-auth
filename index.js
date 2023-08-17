@@ -1,13 +1,15 @@
 import express from 'express';
 import connection from './database/db.js';
 import authRoutes from './routes/authRoutes.js';
+import dashboardRoute from './routes/dashboardRoute.js'
 import cookieParser from 'cookie-parser';
 const PORT = "8080";
 const app = express();
 app.use(express.json())
 app.use(cookieParser());
 
-app.use(authRoutes)
+app.use(authRoutes, dashboardRoute)
+// app.use(dashboardRoute)
 
 // COOKIE
 // app.get("/set-cookies", (req, res) => {
