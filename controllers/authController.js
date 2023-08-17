@@ -1,7 +1,7 @@
 import { UserModel } from "../models/user.js";
 import jwt from "jsonwebtoken";
 const handleError = (err) => {
-    console.log("err....", err.code)
+    console.log("err....", err.message)
     let errors = { email: "", username: "", password: "" }
 
     // duplicate error code
@@ -16,7 +16,16 @@ const handleError = (err) => {
             errors[properties.path] = properties.message
         })
     }
-    return errors
+
+    // HANDLING ERRORS FOR LOGIN ROUTE
+    // incorrect emails
+    if(err.message === "incorrect email"){
+        errors.email="incorrect email";
+    }
+    if(err.message === "incorrect password"){
+        errors.password = "incorrect password";
+    }
+    return errors;
 }
 
 
@@ -55,6 +64,16 @@ export const signup_post = async (req, res) => {
 }
 
 // AUTHENTICATE A CURRENT USER
-export const login_post = (req, res) => {
-    res.send("login_post")
+export const login_post = async (req, res) => {
+    const { email, password } = req.body
+    try {
+        const user = await UserModel.login(email, password);
+        const token = createToken(user._id)
+        res.cookie("jwt-token", token, { httpOnly: true, maxAge: maxAge * 1000 })
+        res.status(200).json({ userLoggedin: user._id })
+    } catch (error) {
+        console.log("error", error)
+        const err = handleError(error);
+        res.status(400).json(err)
+    }
 }
