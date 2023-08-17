@@ -14,6 +14,20 @@ const UserSchema = new Schema({
 //     next();
 // })
 
+//  STATIC METHOD FOR USER LOGIN
+UserSchema.statics.login = async function(email, password){
+    const user = await this.findOne({email})
+    console.log("user", user); 
+    if(user){
+        const auth = await bcrypt.compare(password, user.password)
+        if(auth){
+            return user;
+        }
+        throw Error("incorrect password");
+    }
+    throw Error("incorrect email");
+}
+
 
 // FIRE FUNCTION BEFORE USER SAVE TO DB
 UserSchema.pre("save", async function(next){
